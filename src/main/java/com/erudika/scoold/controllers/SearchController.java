@@ -18,6 +18,7 @@
 package com.erudika.scoold.controllers;
 
 import com.erudika.para.client.ParaClient;
+import com.erudika.para.core.utils.Config;
 import com.erudika.para.core.utils.Pager;
 import com.erudika.para.core.utils.Utils;
 import com.erudika.scoold.ScooldConfig;
@@ -27,7 +28,9 @@ import com.erudika.scoold.core.Comment;
 import com.erudika.scoold.core.Feedback;
 import com.erudika.scoold.core.Post;
 import com.erudika.scoold.core.Profile;
+import com.erudika.scoold.core.Question;
 import com.erudika.scoold.core.Reply;
+import com.erudika.scoold.core.Sticky;
 import com.erudika.scoold.utils.ScooldUtils;
 import com.redfin.sitemapgenerator.WebSitemapGenerator;
 import com.redfin.sitemapgenerator.WebSitemapUrl;
@@ -263,23 +266,34 @@ public class SearchController {
 		}
 		return ResponseEntity.ok().
 				contentType(MediaType.APPLICATION_XML).
-				cacheControl(CacheControl.maxAge(3, TimeUnit.HOURS)).
+				cacheControl(CacheControl.maxAge(6, TimeUnit.HOURS)).
 				eTag(Utils.md5(sitemap)).
 				body(sitemap);
 	}
 
 	private String getSitemap(HttpServletRequest req) throws IOException, FeedException {
 		boolean canList = utils.isDefaultSpacePublic() || utils.isAuthenticated(req);
-		List<Post> questions = canList ? utils.fullQuestionsSearch("*") : Collections.emptyList();
-		if (!questions.isEmpty()) {
-			String baseurl = CONF.serverUrl() + CONF.serverContextPath();
-			WebSitemapGenerator generator = new WebSitemapGenerator(baseurl);
-			for (Post post : questions) {
-				String baselink = baseurl.concat(post.getPostLink(false, false));
-				generator.addUrl(new WebSitemapUrl.Options(baselink).lastMod(new Date(post.getTimestamp())).build());
+		if (canList) {
+			List<Post> questions = new LinkedList<>();
+			pc.readEverything(pager -> {
+				pager.setLimit(100);
+				List<Post> results = pc.findQuery("", Config._TYPE + ":(" + String.join(" OR ",
+						Utils.type(Question.class), Utils.type(Sticky.class)) + ")", pager);
+				questions.addAll(results);
+				return results;
+			});
+			logger.debug("Found {} questions while generating sitemap.", questions.size());
+			if (!questions.isEmpty()) {
+				String baseurl = CONF.serverUrl() + CONF.serverContextPath();
+				WebSitemapGenerator generator = new WebSitemapGenerator(baseurl);
+				for (Post post : questions) {
+					String baselink = baseurl.concat(post.getPostLink(false, false));
+					generator.addUrl(new WebSitemapUrl.Options(baselink).lastMod(new Date(post.getTimestamp())).build());
+				}
+				return generator.writeAsStrings().get(0);
 			}
-			return generator.writeAsStrings().get(0);
 		}
+		logger.debug("Sitemap generation skipped - public={} auth={}", utils.isDefaultSpacePublic(), utils.isAuthenticated(req));
 		return "<_/>";
 	}
 }
