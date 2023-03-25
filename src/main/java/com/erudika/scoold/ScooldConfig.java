@@ -2393,7 +2393,7 @@ public class ScooldConfig extends Config {
 			category = "Customization",
 			description = "The width of the logo image in the nav bar, in pixels. Used for fine adjustments to the logo size.")
 	public int logoWidth() {
-		return getConfigInt("logo_width", 100);
+		return getConfigInt("logo_width", 150);
 	}
 
 	@Documented(position = 2280,

@@ -194,7 +194,7 @@
 
 							<div class="brand-logo">
 								<a href="$!{CONTEXT_PATH}/">
-									<img src="$logoUrl" class="scoold-logo" width="$logoWidth" alt="scoold logo">
+									<img src="$logoUrl" class="scoold-logo" width="$logoWidth" alt="scoodle.in">
 								</a>
 							</div>
 
@@ -386,7 +386,7 @@
 					</div>
 				</div>
 				#if($showBranding)
-				<div>
+				#*<div>
 					<div class="container">
 						<div class="row mbn">
 							<div class="col l6 s12 sTextCenter">
@@ -394,14 +394,14 @@
 								'<a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons</a>') )
 								<i class="fa fa-creative-commons"></i> $_liclink
 							</div>
-							<div class="col l6 s12 sTextCenter right-align">
+							 <div class="col l6 s12 sTextCenter right-align">
 								<span>This website is powered by <a href="https://scoold.com"><b>Scoold</b></a> and <a href="https://paraio.com">
 									<img src="$imageslink/paradark.svg" width="60" alt="Para logo" class="para-logo-footer"></a>
 								</span>
 							</div>
 						</div>
 					</div>
-				</div>
+				</div> *#
 				#end
 			</footer>
 		</div>
